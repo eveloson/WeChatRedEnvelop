@@ -1,3 +1,5 @@
+#define kBundlePath @"/Library/MobileSubstrate/DynamicLibraries/com.swiftyper.wechatredenvelop.bundle"
+
 #pragma mark - Util
 
 @interface WCBizUtil : NSObject
@@ -59,10 +61,14 @@
 
 @end
 
-@interface MMServiceCenter : NSObject
+@interface MMContext : NSObject
 
-+ (instancetype)defaultCenter;
-- (id)getService:(Class)service;
++ (id)activeUserContext;	// IMP=0x0000000109138a28
++ (id)rootContext;	// IMP=0x0000000109138a1c
++ (id)lastContext;	// IMP=0x0000000109138994
++ (id)fastCurrentContext;	// IMP=0x0000000109138988
++ (id)currentContext;	// IMP=0x0000000109138918
+- (id)getService:(Class)arg1;	// IMP=0x000000010917b054
 
 @end
 
@@ -131,10 +137,22 @@
 
 #pragma mark - QRCode
 
+@interface ScanQRCodeLogicParams: NSObject
+
+- (id)initWithCodeType:(int)arg1 fromScene:(unsigned int)arg2;	// IMP=0x00000001035fcec8
+
+@end
+
+@interface NewQRCodeScannerParams: NSObject
+
+- (id)initWithCodeType:(int)arg1;	// IMP=0x0000000103627e3c
+
+@end
+
 @interface ScanQRCodeLogicController: NSObject
 
 @property(nonatomic) unsigned int fromScene;
-- (id)initWithViewController:(id)arg1 CodeType:(int)arg2;
+- (id)initWithViewController:(id)arg1 logicParams:(id)arg2;	// IMP=0x00000001035fd0ec
 - (void)tryScanOnePicture:(id)arg1;
 - (void)doScanQRCode:(id)arg1;
 - (void)showScanResult;
@@ -143,23 +161,25 @@
 
 @interface NewQRCodeScanner: NSObject
 
-- (id)initWithDelegate:(id)arg1 CodeType:(int)arg2;
-- (void)notifyResult:(id)arg1 type:(id)arg2 version:(int)arg3 rawData:(NSData *)arg4;
+- (id)initWithDelegate:(id)arg1 scannerParams:(id)arg2;	// IMP=0x0000000103628004
+- (_Bool)scanOnePicture:(id)arg1;	// IMP=0x000000010362b65c
 
 @end
 
 #pragma mark - MMTableView
 
-@interface MMTableViewInfo
+@interface WCTableViewManager
 
-- (id)getTableView;
 - (void)clearAllSection;
-- (void)addSection:(id)arg1;
+- (id)getTableView;
 - (void)insertSection:(id)arg1 At:(unsigned int)arg2;
+- (void)addSection:(id)arg1;
+- (void)addTableViewToSuperView:(id)arg1;	// IMP=0x0000000100da4684
 
-@end
 
-@interface MMTableViewSectionInfo
+@end    
+
+@interface WCTableViewSectionManager
 
 + (id)sectionInfoDefaut;
 + (id)sectionInfoHeader:(id)arg1;
@@ -168,13 +188,18 @@
 
 @end
 
-@interface MMTableViewCellInfo
+@interface WCTableViewCellManager
 
-+ (id)normalCellForSel:(SEL)arg1 target:(id)arg2 title:(id)arg3 accessoryType:(long long)arg4;
++ (id)normalCellForSel:(SEL)arg1 target:(id)arg2 title:(id)arg3;
++ (id)normalCellForSel:(SEL)arg1 target:(id)arg2 title:(id)arg3 rightValue:(id)arg4 accessoryType:(long long)arg5;	// IMP=0x000000010188f9e4
+
 + (id)switchCellForSel:(SEL)arg1 target:(id)arg2 title:(id)arg3 on:(_Bool)arg4;
-+ (id)normalCellForSel:(SEL)arg1 target:(id)arg2 title:(id)arg3 rightValue:(id)arg4 accessoryType:(long long)arg5;
+
+@end
+
+@interface WCTableViewNormalCellManager
+
 + (id)normalCellForTitle:(id)arg1 rightValue:(id)arg2;
-+ (id)urlCellForTitle:(id)arg1 url:(id)arg2;
 
 @end
 
@@ -191,11 +216,11 @@
 
 @interface MMLoadingView : UIView
 
-@property(retain, nonatomic) UILabel *m_label; // @synthesize m_label;
-@property (assign, nonatomic) BOOL m_bIgnoringInteractionEventsWhenLoading; // @synthesize m_bIgnoringInteractionEventsWhenLoading;
+@property(retain, nonatomic) NSString *text; // @synthesize text=_text;
+@property (assign, nonatomic) BOOL ignoreInteractionEventsWhenLoading; // @synthesize m_bIgnoringInteractionEventsWhenLoading;
 
-- (void)setFitFrame:(long long)arg1;
 - (void)startLoading;
+- (void)startLoadingAfterDelay:(double)arg1;	// IMP=0x0000000108685434
 - (void)stopLoading;
 - (void)stopLoadingAndShowError:(id)arg1;
 - (void)stopLoadingAndShowOK:(id)arg1;
@@ -209,32 +234,13 @@
 
 @end
 
-
-@protocol ContactSelectViewDelegate <NSObject>
-
-- (void)onSelectContact:(CContact *)arg1;
-
-@end
-
 @interface ContactSelectView : UIView
 
-@property(nonatomic) unsigned int m_uiGroupScene; // @synthesize m_uiGroupScene;
-@property(nonatomic) _Bool m_bMultiSelect; // @synthesize m_bMultiSelect;
-@property(retain, nonatomic) NSMutableDictionary *m_dicMultiSelect; // @synthesize m_dicMultiSelect;
+@property(nonatomic) _Bool m_bHideSearchBar; // @synthesize m_bHideSearchBar=_m_bHideSearchBar;
 
-- (id)initWithFrame:(struct CGRect)arg1 delegate:(id)arg2;
-- (void)initData:(unsigned int)arg1;
-- (void)initView;
 - (void)addSelect:(id)arg1;
 
 @end
-
-@interface ContactsDataLogic : NSObject
-
-@property(nonatomic) unsigned int m_uiScene; // @synthesize m_uiScene;
-
-@end
-
 @interface MMUINavigationController : UINavigationController
 
 @end
@@ -310,9 +316,14 @@
 @interface MultiSelectContactsViewController : UIViewController
 
 @property(nonatomic) _Bool m_bKeepCurViewAfterSelect; // @synthesize m_bKeepCurViewAfterSelect=_m_bKeepCurViewAfterSelect;
+@property(nonatomic) _Bool m_bShowHistoryGroup; // @synthesize m_bShowHistoryGroup;
 @property(nonatomic) unsigned int m_uiGroupScene; // @synthesize m_uiGroupScene;
+@property(nonatomic) int m_scene; // @synthesize m_scene=_m_scene;
+@property(nonatomic) _Bool m_onlyChatRoom; // @synthesize m_onlyChatRoom=_m_onlyChatRoom;
 
 @property(nonatomic, weak) id <MultiSelectContactsViewControllerDelegate> m_delegate; // @synthesize m_delegate;
+
+- (void)updatePanelBtn;
 
 @end
 

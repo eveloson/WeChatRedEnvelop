@@ -2,6 +2,11 @@
 
 目前市面上最稳定、功能最全的 iOS 版微信抢红包插件。
 
+```
+2021-05-09 已更新，支持 8.0.5 版微信
+2019-07-03 已更新，支持 7.0.0 版微信。
+```
+
 ## 功能特色
 
 - **完全原生体验**
@@ -49,8 +54,8 @@
 
 ## 应用截图
 
-<img src="./ScreenShots/Setting.jpeg" height="568" hspace="20">
-<img src="./ScreenShots/AssistantSetting.jpeg" height="568" hspace="20">
+<img src="./ScreenShots/Setting.png" height="568" hspace="20">
+<img src="./ScreenShots/AssistantSetting.png" height="568" hspace="20">
 
 ## 支持作者
 
